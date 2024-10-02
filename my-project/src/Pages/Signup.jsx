@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Alert } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
+import Oauth from "../Components/Oauth";
 // import OAuth from "../components/OAuth";
 
 function Signup() {
@@ -107,7 +108,7 @@ function Signup() {
                 "Sign Up"
               )}
             </Button>
-             
+             <Oauth></Oauth>
           </form>
           <div className="flex-gap-2 text-sm mt-5">
             <span>Already have an account?</span>
