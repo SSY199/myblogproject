@@ -57,7 +57,7 @@ function Header() {
               </span>
             </Dropdown.Header>
 
-            <Link to={"/dashboard"}>
+            <Link to={"/dashboard?tab=posts"}>
               <Dropdown.Item>Profile</Dropdown.Item>
             </Link>
 
