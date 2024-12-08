@@ -7,7 +7,7 @@ import Oauth from "../Components/Oauth";
 // import OAuth from "../components/OAuth";
 
 function Signup() {
-  const [formData, setFormData] = useState();
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
