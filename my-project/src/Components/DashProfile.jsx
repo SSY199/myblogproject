@@ -8,9 +8,10 @@ import 'react-circular-progressbar/dist/styles.css';
 import { updateStart, updateSuccess, updateFailure, deleteUserFailure, deleteUserStart, deleteUserSuccess, signoutSuccess } from "../redux/User/userSlice";
 import { useDispatch } from "react-redux";
 import {HiOutlineExclamationCircle} from 'react-icons/hi'
+import { Link } from 'react-router-dom';
 
 function DashProfile() {
-  const { currentUser, error } = useSelector((state) => state.user);
+  const { currentUser, error, loading } = useSelector((state) => state.user);
   const [imageFile, setImageFile] = useState(null);
   const [imageFileUrl, setImageFileUrl] = useState(null);
   const [imageFileUploading, setImageFileUploading] = useState(null);
@@ -187,7 +188,7 @@ const handleSubmit = async (e) => {
           <img
             src={imageFileUrl || currentUser.profilePicture}
             alt="USER"
-            className={`rounded-full w-full h-full object-cover border-8 border-[lightgray]
+            className={`rounded-full w-full h-full object-cover border-3 border-[lightgray]
               ${imageFileUploading && imageFileUploading < 100 && 'opacity-60'}`}
           />
         </div>
@@ -212,9 +213,17 @@ const handleSubmit = async (e) => {
           placeholder="password" onChange={handleChange}
            
         ></TextInput>
-        <Button type='submit' gradientDuoTone='purpleToBlue' outline>
-          Update
+        <Button type='submit' gradientDuoTone='purpleToBlue' outline disabled={loading || imageFileUploadProgress}>
+          {loading ? "Loading..." : "Update"}
         </Button>
+        {currentUser.isAdmin && (
+          <Link to={'/createpost'}>
+          <Button type='button' gradientDuoTone='purpleToPink' className="w-full">
+            Create a Post
+          </Button>
+          </Link>
+        )
+      }
       </form>
       <div className="text-red-600 flex justify-between mt-5">
         <span onClick={() => setShowModal(true)} className="cursor-pointer">Delete Account</span>
