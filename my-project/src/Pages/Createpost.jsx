@@ -1,4 +1,4 @@
-import { Button, FileInput, Select, TextInput } from 'flowbite-react'
+import { Alert, Button, FileInput, Select, TextInput,  } from 'flowbite-react'
 import React, { useState } from 'react';
 import { app } from '../firebase.js';
 import ReactQuill from 'react-quill';
@@ -6,13 +6,15 @@ import 'react-quill/dist/quill.snow.css';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { useNavigate } from 'react-router-dom'
 
 function Createpost() {
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState(null);
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
   const [imageUploadError, setImageUploadError] = useState(null);
   const [formData, setFormData] = useState({});
-
+  const [publishError, setPublishError] = useState(null);
+  const navigate = useNavigate();
   const handleUploadImage = async (e) => {
     try {
       const selectedFile = e.target.files[0];
@@ -45,7 +47,6 @@ function Createpost() {
             setImageUploadProgress(null);
             setImageUploadError(null);
             
-            // Update the state with the new image URL (keep the existing images)
             setFormData((prev) => ({
               ...prev,
               images: [...prev.images || [], downloadURL]  // store multiple images
@@ -63,15 +64,41 @@ function Createpost() {
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try{
+      const res = await fetch('/api/post/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+      if(!res.ok){
+        setPublishError("Failed to publish post");
+        return;
+      }
+      if (res.ok) {
+        setPublishError(null);
+        navigate(`/posts/${data.slug}`);
+      }  
+    } catch (error) {
+      setPublishError("An unexpected error occurred");
+      console.error(error);
+    }
+  }
+
   return (
     <div className='p-3 max-w-3xl mx-auto min-h-screen'>
       <h1 className='text-center text-3xl my-7 font-semibold'>
         Create a New Post
       </h1>
-      <form className='flex flex-col gap-4'>
+      <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
         <div className='flex flex-col gap-4 sm:flex-row justify-between'>
-          <TextInput type='text' placeholder='Title' required id='title' className='flex-1'></TextInput>
-          <Select>
+          <TextInput type='text' placeholder='Title' required id='title' className='flex-1' onChange={(e) => 
+            setFormData({...formData, title: e.target.value })}></TextInput>
+          <Select onChange={(e) => 
+            setFormData({...formData, title: e.target.value})
+          }>
             <option value='uncategorized'>Select a category</option>
             <option value='programming'>Programming</option>
             <option value='politics'>Politics</option>
@@ -90,7 +117,11 @@ function Createpost() {
             accept='image/*'
             onChange={handleUploadImage}
           />
-          <TextInput type='text' placeholder='Caption' className='flex-1' />
+          <TextInput type='text' placeholder='Caption' className='flex-1'
+          onChange={
+            (e) =>
+              setFormData({...formData, caption: e.target.value })
+          } />
           <Button type='submit' gradientDuoTone='purpleToBlue' size='sm' outline disabled={imageUploadProgress}>
             {imageUploadProgress ? (
               <div className='w-16 h-16'>
@@ -122,10 +153,15 @@ function Createpost() {
             ))}
         </div>
 
-        <ReactQuill theme="snow" placeholder='What is happening?!...' className='h-72 mb-12' required />
+        <ReactQuill theme="snow" placeholder='What is happening?!...' className='h-72 mb-12' required  onChange={
+          (value) => setFormData({...formData, content: value })
+        } />
         <Button type='submit' gradientDuoTone='purpleToPink' size='lg' className='w-full'>
           Publish Post
         </Button>
+        {
+          publishError && <Alert className='mt-5' color='failure'>{publishError}</Alert>
+        }
       </form>
     </div>
   );
